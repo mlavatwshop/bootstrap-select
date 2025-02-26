@@ -1,9 +1,9 @@
 {
   "name": "bootstrap-select",
-  "title": "bootstrap-select",
+  "title": "@wshopdevteam/bootstrap-select",
   "main": "dist/js/bootstrap-select.js",
   "description": "The jQuery plugin that brings select elements into the 21st century with intuitive multiselection, searching, and much more. Now with Bootstrap 4 support.",
-  "version": "1.14.0-beta3",
+  "version": "1.14.1",
   "homepage": "https://developer.snapappointments.com/bootstrap-select",
   "author": {
     "name": "Casey Holzer",
@@ -17,11 +17,15 @@
     {
       "name": "SnapAppointments, LLC",
       "url": "https://snapappointments.com"
+    },
+    {
+      "name": "WSHOP",
+      "url": "https://wshop.com"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/snapappointments/bootstrap-select.git"
+    "url": "git://github.com/wshopdevteam/bootstrap-select.git"
   },
   "license": "MIT",
   "dependencies": {},

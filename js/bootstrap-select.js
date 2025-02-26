@@ -3392,7 +3392,11 @@
 
           searchMatch = matches[matchIndex];
 
-          activeLi = that.selectpicker.main.data[searchMatch];
+          // activeLi = that.selectpicker.main.data[searchMatch];
+          // @maxencelav match the element in that.selectpicker.main.data that has its [element] property equal to searchMatch
+          activeLi = that.selectpicker.main.data.find(function (li) {
+            return li.element === searchMatch;
+          });
 
           if (scrollTop - activeLi.position > 0) {
             offset = activeLi.position - activeLi.height;
@@ -3403,7 +3407,11 @@
             updateScroll = activeLi.position > scrollTop + that.sizeInfo.menuInnerHeight;
           }
 
-          liActive = that.selectpicker.main.elements[searchMatch];
+          // liActive = that.selectpicker.main.elements[searchMatch];
+          // @maxencelav find the element in that.selectpicker.main.elements that is equal to searchMatch
+          liActive = that.selectpicker.main.elements.find(function (li) {
+            return li === searchMatch;
+          });
 
           that.activeElement = liActive;
 
