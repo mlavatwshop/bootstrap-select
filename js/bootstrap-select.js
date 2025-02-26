@@ -143,6 +143,40 @@
     return attributesObject;
   }
 
+  /**
+   * Check if element.getBoundingClientRect() is supported.
+   *
+   * @param {HTMLElement} element
+   * @returns {boolean}
+   */
+  function isGetBoundingClientRectSupported (element) {
+    return typeof element.getBoundingClientRect === 'function';
+  }
+
+  /**
+   * Attempt to get rendered height of the element.
+   *
+   * @param {HTMLElement} element
+   * @returns {number}
+   */
+  function attemptGetRenderedHeight (element) {
+    return isGetBoundingClientRectSupported(element)
+      ? element.getBoundingClientRect().height
+      : element.offsetHeight;
+  }
+
+  /**
+   * Attempt to get rendered width of the element.
+   *
+   * @param {HTMLElement} element
+   * @returns {number}
+   */
+  function attemptGetRenderedWidth (element) {
+    return isGetBoundingClientRectSupported(element)
+      ? element.getBoundingClientRect().width
+      : element.offsetWidth;
+  }
+
   // Polyfill for browsers with no classList support
   // Remove in v2
   if (!('classList' in document.createElement('_'))) {
@@ -420,6 +454,17 @@
           searchSuccess = method(string, searchString);
         } else if (method === 'contains') {
           searchSuccess = string.indexOf(searchString) >= 0;
+        } else if (method === 'containsAll') {
+          var searchArray = searchString.split(' ');
+          var notAllMatched = false;
+          searchSuccess = false;
+
+          for (var searchSubString in searchArray) {
+            searchSuccess = string.indexOf(searchArray[searchSubString]) >= 0;
+            if (!searchSuccess) notAllMatched = true;
+          }
+
+          if (notAllMatched) searchSuccess = false;
         } else {
           searchSuccess = string.startsWith(searchString);
         }
@@ -616,8 +661,7 @@
     ARROW_DOWN: 40 // KeyboardEvent.which value for down arrow key
   };
 
-  // eslint-disable-next-line no-undef
-  var Dropdown = window.Dropdown || bootstrap.Dropdown;
+  var Dropdown = window.Dropdown || window.bootstrap && window.bootstrap.Dropdown;
 
   function getVersion () {
     var version;
@@ -957,6 +1001,7 @@
     size: 'auto',
     title: null,
     placeholder: null,
+    titleTip: null,
     allowClear: false,
     selectedTextFormat: 'values',
     width: false,
@@ -1447,7 +1492,7 @@
             // if an option is encountered that is wider than the current menu width, update the menu width accordingly
             // switch to ResizeObserver with increased browser support
             if (isVirtual === true && that.sizeInfo.hasScrollBar) {
-              var menuInnerInnerWidth = menuInner.firstChild.offsetWidth;
+              var menuInnerInnerWidth = attemptGetRenderedWidth(menuInner.firstChild);
 
               if (init && menuInnerInnerWidth < that.sizeInfo.menuInnerInnerWidth && that.sizeInfo.totalMenuWidth > that.sizeInfo.selectWidth) {
                 menuInner.firstChild.style.minWidth = that.sizeInfo.menuInnerInnerWidth + 'px';
@@ -1455,7 +1500,7 @@
                 // set to 0 to get actual width of menu
                 that.$menu[0].style.minWidth = 0;
 
-                var actualMenuWidth = menuInner.firstChild.offsetWidth;
+                var actualMenuWidth = attemptGetRenderedWidth(menuInner.firstChild);
 
                 if (actualMenuWidth > that.sizeInfo.menuInnerInnerWidth) {
                   that.sizeInfo.menuInnerInnerWidth = actualMenuWidth;
@@ -1911,6 +1956,7 @@
           buttonInner = button.querySelector('.filter-option-inner-inner'),
           multipleSeparator = document.createTextNode(this.options.multipleSeparator),
           titleFragment = elementTemplates.fragment.cloneNode(false),
+          titleTipFragment = elementTemplates.fragment.cloneNode(false),
           showCount,
           countMax,
           hasContent = false;
@@ -2018,6 +2064,16 @@
       buttonInner.innerHTML = '';
       buttonInner.appendChild(titleFragment);
 
+      if (this.options.titleTip && !button.querySelector('.title-tip')) {
+        var titleTip = document.createElement('div');
+        titleTip.setAttribute('class', 'title-tip');
+        titleTipFragment = generateOption.text.call(this, {
+          text: this.options.titleTip ? this.options.titleTip : ''
+        }, true);
+        titleTip.appendChild(titleTipFragment);
+        button.querySelector('.filter-option').prepend(titleTip);
+      }
+
       if (version.major < 4 && this.$newElement[0].classList.contains('bs3-has-addon')) {
         var filterExpand = button.querySelector('.filter-expand'),
             clone = buttonInner.cloneNode(true);
@@ -2093,7 +2149,7 @@
           doneButton = this.options.doneButton && this.multiple && this.$menu.find('.bs-donebutton').length > 0 ? this.$menu.find('.bs-donebutton')[0].cloneNode(true) : null,
           firstOption = this.$element[0].options[0];
 
-      this.sizeInfo.selectWidth = this.$newElement[0].offsetWidth;
+      this.sizeInfo.selectWidth = attemptGetRenderedWidth(this.$newElement[0]);
 
       text.className = 'text';
       a.className = 'dropdown-item ' + (firstOption ? firstOption.className : '');
@@ -2147,15 +2203,15 @@
 
       document.body.appendChild(newElement);
 
-      var liHeight = li.offsetHeight,
-          dropdownHeaderHeight = dropdownHeader ? dropdownHeader.offsetHeight : 0,
-          headerHeight = header ? header.offsetHeight : 0,
-          searchHeight = search ? search.offsetHeight : 0,
-          actionsHeight = actions ? actions.offsetHeight : 0,
-          doneButtonHeight = doneButton ? doneButton.offsetHeight : 0,
+      var liHeight = attemptGetRenderedHeight(li),
+          dropdownHeaderHeight = dropdownHeader ? attemptGetRenderedHeight(dropdownHeader) : 0,
+          headerHeight = header ? attemptGetRenderedHeight(header) : 0,
+          searchHeight = search ? attemptGetRenderedHeight(search) : 0,
+          actionsHeight = actions ? attemptGetRenderedHeight(actions) : 0,
+          doneButtonHeight = doneButton ? attemptGetRenderedHeight(doneButton) : 0,
           dividerHeight = $(divider).outerHeight(true),
           menuStyle = window.getComputedStyle(menu),
-          menuWidth = menu.offsetWidth,
+          menuWidth = attemptGetRenderedWidth(menu),
           menuPadding = {
             vert: toInteger(menuStyle.paddingTop) +
                   toInteger(menuStyle.paddingBottom) +
@@ -2178,7 +2234,7 @@
 
       menuInner.style.overflowY = 'scroll';
 
-      scrollBarWidth = menu.offsetWidth - menuWidth;
+      scrollBarWidth = attemptGetRenderedWidth(menu) - menuWidth;
 
       document.body.removeChild(newElement);
 
@@ -2195,7 +2251,7 @@
       this.sizeInfo.menuInnerInnerWidth = menuWidth - menuPadding.horiz;
       this.sizeInfo.totalMenuWidth = this.sizeInfo.menuWidth;
       this.sizeInfo.scrollBarWidth = scrollBarWidth;
-      this.sizeInfo.selectHeight = this.$newElement[0].offsetHeight;
+      this.sizeInfo.selectHeight = attemptGetRenderedHeight(this.$newElement[0]);
 
       this.setPositionData();
     },
@@ -2416,7 +2472,7 @@
               containerPos = { top: 0, left: 0 };
             }
 
-            actualHeight = $element.hasClass(classNames.DROPUP) ? 0 : $element[0].offsetHeight;
+            actualHeight = $element.hasClass(classNames.DROPUP) ? 0 : attemptGetRenderedHeight($element[0]);
 
             // Bootstrap 4+ uses Popper for menu positioning
             if (version.major < 4 || display === 'static') {
@@ -2424,7 +2480,7 @@
               containerPosition.left = pos.left - containerPos.left;
             }
 
-            containerPosition.width = $element[0].offsetWidth;
+            containerPosition.width = attemptGetRenderedWidth($element[0]);
 
             that.$bsContainer.css(containerPosition);
           };
@@ -2951,6 +3007,11 @@
 
       this.$searchbox.on('input propertychange', function () {
         var searchValue = that.$searchbox[0].value;
+        var isWhitespace = /^\s*$/.test(searchValue);
+        if (!isWhitespace) {
+          // trim leading and trailing half-width spaces and full-width spaces.
+          searchValue = searchValue.replace(/^\s+|\s+$/g, '');
+        }
 
         that.selectpicker.search.elements = [];
         that.selectpicker.search.data = [];
@@ -3331,7 +3392,11 @@
 
           searchMatch = matches[matchIndex];
 
-          activeLi = that.selectpicker.main.data[searchMatch];
+          // activeLi = that.selectpicker.main.data[searchMatch];
+          // @maxencelav match the element in that.selectpicker.main.data that has its [element] property equal to searchMatch
+          activeLi = that.selectpicker.main.data.find(function (li) {
+            return li.element === searchMatch;
+          });
 
           if (scrollTop - activeLi.position > 0) {
             offset = activeLi.position - activeLi.height;
@@ -3342,7 +3407,11 @@
             updateScroll = activeLi.position > scrollTop + that.sizeInfo.menuInnerHeight;
           }
 
-          liActive = that.selectpicker.main.elements[searchMatch];
+          // liActive = that.selectpicker.main.elements[searchMatch];
+          // @maxencelav find the element in that.selectpicker.main.elements that is equal to searchMatch
+          liActive = that.selectpicker.main.elements.find(function (li) {
+            return li === searchMatch;
+          });
 
           that.activeElement = liActive;
 
@@ -3378,6 +3447,10 @@
             $(document).data('spaceSelect', true);
           }
         }
+        if (e.which === keyCodes.ENTER) {
+          // hide dropdown menu
+          that.dropdown.hide();
+        }
       }
     },
 
@@ -3392,6 +3465,8 @@
       // update options if data attributes have been changed
       var config = $.extend({}, this.options, getAttributesObject(this.$element), this.$element.data()); // in this order on refresh, as user may change attributes on select, and options object is not passed on refresh
       this.options = config;
+
+      this.selectpicker.main.data = [];
 
       if (this.options.source.data) {
         this.render();

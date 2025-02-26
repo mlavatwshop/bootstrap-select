@@ -1,9 +1,9 @@
 {
   "name": "bootstrap-select",
-  "title": "bootstrap-select",
+  "title": "@wshopdevteam/bootstrap-select",
   "main": "dist/js/bootstrap-select.js",
   "description": "The jQuery plugin that brings select elements into the 21st century with intuitive multiselection, searching, and much more. Now with Bootstrap 4 support.",
-  "version": "1.14.0-beta3",
+  "version": "1.14.1",
   "homepage": "https://developer.snapappointments.com/bootstrap-select",
   "author": {
     "name": "Casey Holzer",
@@ -17,11 +17,15 @@
     {
       "name": "SnapAppointments, LLC",
       "url": "https://snapappointments.com"
+    },
+    {
+      "name": "WSHOP",
+      "url": "https://wshop.com"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/snapappointments/bootstrap-select.git"
+    "url": "git://github.com/wshopdevteam/bootstrap-select.git"
   },
   "license": "MIT",
   "dependencies": {},
@@ -31,7 +35,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^9.7.6",
-    "cypress": "^9.5.0",
+    "cypress": "^13.5.1",
     "grunt": "^1.1.0",
     "grunt-banner": "^0.6.0",
     "grunt-contrib-clean": "^2.0.0",
@@ -50,6 +54,13 @@
     "uuid": "^8.3.2"
   },
   "scripts": {
+    "lint": "grunt lint",
+    "build": "grunt build",
+    "dev-watch": "grunt dev-watch",
+    "dist": "grunt dist",
+    "test:e2e": "grunt build && cypress run",
+    "cy:run": "cypress run",
+    "cy:run:headed": "cypress run --headed",
     "cypress:open": "cypress open"
   },
   "browserslist": [
